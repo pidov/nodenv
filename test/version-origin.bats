@@ -4,11 +4,6 @@ load test_helper
 
 export NODENV_HOOK_PATH="${NODENV_ROOT}/nodenv.d"
 
-create_hook() {
-  mkdir -p "${NODENV_ROOT}/nodenv.d/version-origin"
-  cat > "${NODENV_ROOT}/nodenv.d/version-origin/$1" <<<"$2"
-}
-
 setup() {
   mkdir -p "$NODENV_TEST_DIR"
   cd "$NODENV_TEST_DIR"
@@ -46,7 +41,7 @@ setup() {
 
 @test "reports from hook" {
   touch .node-version
-  create_hook test.bash "NODENV_VERSION_ORIGIN=plugin"
+  create_hook version-origin test.bash "NODENV_VERSION_ORIGIN=plugin"
 
   NODENV_VERSION=1 run nodenv-version-origin
 

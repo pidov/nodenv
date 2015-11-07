@@ -128,3 +128,8 @@ path_without() {
   done
   echo "${path%:}"
 }
+
+create_hook() {
+  mkdir -p "${NODENV_ROOT}/nodenv.d/$1"
+  cat > "${NODENV_ROOT}/nodenv.d/$1/$2" <<<"$3"
+}

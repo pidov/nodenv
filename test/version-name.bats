@@ -4,11 +4,6 @@ load test_helper
 
 export NODENV_HOOK_PATH="${NODENV_ROOT}/nodenv.d"
 
-create_hook() {
-  mkdir -p "${NODENV_ROOT}/nodenv.d/version-name"
-  cat > "${NODENV_ROOT}/nodenv.d/version-name/$1" <<<"$2"
-}
-
 create_version() {
   mkdir -p "${NODENV_ROOT}/versions/$1"
 }
@@ -36,7 +31,7 @@ setup() {
   NODENV_VERSION=1.0.0 run nodenv-version-name
   assert_success "1.0.0"
 
-  create_hook test.bash "NODENV_VERSION=2.0.0"
+  create_hook version-name test.bash "NODENV_VERSION=2.0.0"
   NODENV_VERSION=1.0.0 run nodenv-version-name
   assert_success "2.0.0"
 }
