@@ -2,6 +2,13 @@
 
 load test_helper
 
+export NODENV_HOOK_PATH="${NODENV_ROOT}/nodenv.d"
+
+create_hook() {
+  mkdir -p "${NODENV_ROOT}/nodenv.d/version-name"
+  cat > "${NODENV_ROOT}/nodenv.d/version-name/$1" <<<"$2"
+}
+
 create_version() {
   mkdir -p "${NODENV_ROOT}/versions/$1"
 }
@@ -20,6 +27,18 @@ setup() {
 @test "system version is not checked for existance" {
   NODENV_VERSION=system run nodenv-version-name
   assert_success "system"
+}
+
+@test "NODENV_VERSION can be overridden by hook" {
+  create_version "1.0.0"
+  create_version "2.0.0"
+
+  NODENV_VERSION=1.0.0 run nodenv-version-name
+  assert_success "1.0.0"
+
+  create_hook test.bash "NODENV_VERSION=2.0.0"
+  NODENV_VERSION=1.0.0 run nodenv-version-name
+  assert_success "2.0.0"
 }
 
 @test "NODENV_VERSION has precedence over local" {
