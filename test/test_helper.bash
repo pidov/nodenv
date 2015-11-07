@@ -130,6 +130,6 @@ path_without() {
 }
 
 create_hook() {
-  mkdir -p "${NODENV_ROOT}/nodenv.d/$1"
-  cat > "${NODENV_ROOT}/nodenv.d/$1/$2" <<<"$3"
+  mkdir -p "${NODENV_HOOK_PATH}/$1"
+  cat > "${NODENV_HOOK_PATH}/$1/$2" <<<"$3"
 }
