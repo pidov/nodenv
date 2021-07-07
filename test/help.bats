@@ -11,7 +11,8 @@ load test_helper
 
 @test "invalid command" {
   run nodenv-help hello
-  assert_failure "nodenv: no such command \`hello'"
+  assert_failure
+  assert_output "nodenv: no such command \`hello'"
 }
 
 @test "shows help for a specific command" {
@@ -26,7 +27,7 @@ SH
 
   run nodenv-help hello
   assert_success
-  assert_output <<SH
+  assert_output - <<SH
 Usage: nodenv hello <world>
 
 This command is useful for saying hello.
@@ -44,7 +45,7 @@ SH
 
   run nodenv-help hello
   assert_success
-  assert_output <<SH
+  assert_output - <<SH
 Usage: nodenv hello <world>
 
 Says "hello" to you, from nodenv
@@ -62,7 +63,8 @@ echo hello
 SH
 
   run nodenv-help --usage hello
-  assert_success "Usage: nodenv hello <world>"
+  assert_success
+  assert_output "Usage: nodenv hello <world>"
 }
 
 @test "multiline usage section" {
@@ -79,7 +81,7 @@ SH
 
   run nodenv-help hello
   assert_success
-  assert_output <<SH
+  assert_output - <<SH
 Usage: nodenv hello <world>
        nodenv hi [everybody]
        nodenv hola --translate
@@ -104,7 +106,7 @@ SH
 
   run nodenv-help hello
   assert_success
-  assert_output <<SH
+  assert_output - <<SH
 Usage: nodenv hello <world>
 
 This is extended help text.

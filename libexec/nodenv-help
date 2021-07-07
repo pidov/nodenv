@@ -15,6 +15,12 @@
 set -e
 [ -n "$NODENV_DEBUG" ] && set -x
 
+# Provide nodenv completions
+if [ "$1" = "--complete" ]; then
+  echo --usage
+  exec nodenv-commands
+fi
+
 command_path() {
   local command="$1"
   command -v nodenv-"$command" || command -v nodenv-sh-"$command" || true
@@ -36,7 +42,15 @@ extract_initial_comment_block() {
 }
 
 collect_documentation() {
-  $(type -p gawk awk | head -1) '
+  local awk
+  awk="$(type -p gawk awk 2>/dev/null | head -1)"
+  if [ -z "$awk" ]; then
+    echo "nodenv: cannot find awk" >&2
+    return 1
+  fi
+
+  # shellcheck disable=SC2016
+  "$awk" '
     /^Summary:/ {
       summary = substr($0, 10)
       next
@@ -80,7 +94,8 @@ collect_documentation() {
 }
 
 documentation_for() {
-  local filename="$(command_path "$1")"
+  local filename
+  filename="$(command_path "$1")"
   if [ -n "$filename" ]; then
     extract_initial_comment_block < "$filename" | collect_documentation
   fi
@@ -108,7 +123,7 @@ print_help() {
   eval "$(documentation_for "$command")"
   [ -n "$help" ] || help="$summary"
 
-  if [ -n "$usage" -o -n "$summary" ]; then
+  if [ -n "$usage" ] || [ -n "$summary" ]; then
     if [ -n "$usage" ]; then
       echo "$usage"
     else
@@ -146,7 +161,7 @@ if [ -z "$1" ] || [ "$1" == "nodenv" ]; then
   print_summaries commands local global shell install uninstall rehash version versions which whence
   echo
   echo "See \`nodenv help <command>' for information on a specific command."
-  echo "For full documentation, see: https://github.com/oinutter/nodenv#readme"
+  echo "For full documentation, see: https://github.com/nodenv/nodenv#readme"
 else
   command="$1"
   if [ -n "$(command_path "$command")" ]; then

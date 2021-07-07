@@ -9,53 +9,29 @@ setup() {
 
 create_file() {
   mkdir -p "$(dirname "$1")"
-  touch "$1"
+  echo "system" > "$1"
+}
+
+@test "detects global 'version' file" {
+  create_file "${NODENV_ROOT}/version"
+  run nodenv-version-file
+  assert_success
+  assert_output "${NODENV_ROOT}/version"
 }
 
 @test "prints global file if no version files exist" {
-  assert [ ! -e "${NODENV_ROOT}/version" ]
-  assert [ ! -e ".node-version" ]
+  refute [ -e "${NODENV_ROOT}/version" ]
+  refute [ -e ".node-version" ]
   run nodenv-version-file
-  assert_success "${NODENV_ROOT}/version"
-}
-
-@test "detects 'global' file" {
-  create_file "${NODENV_ROOT}/global"
-  run nodenv-version-file
-  assert_success "${NODENV_ROOT}/global"
-}
-
-@test "detects 'default' file" {
-  create_file "${NODENV_ROOT}/default"
-  run nodenv-version-file
-  assert_success "${NODENV_ROOT}/default"
-}
-
-@test "'version' has precedence over 'global' and 'default'" {
-  create_file "${NODENV_ROOT}/version"
-  create_file "${NODENV_ROOT}/global"
-  create_file "${NODENV_ROOT}/default"
-  run nodenv-version-file
-  assert_success "${NODENV_ROOT}/version"
+  assert_success
+  assert_output "${NODENV_ROOT}/version"
 }
 
 @test "in current directory" {
   create_file ".node-version"
   run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/.node-version"
-}
-
-@test "legacy file in current directory" {
-  create_file ".nodenv-version"
-  run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/.nodenv-version"
-}
-
-@test ".node-version has precedence over legacy file" {
-  create_file ".node-version"
-  create_file ".nodenv-version"
-  run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/.node-version"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/.node-version"
 }
 
 @test "in parent directory" {
@@ -63,7 +39,8 @@ create_file() {
   mkdir -p project
   cd project
   run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/.node-version"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/.node-version"
 }
 
 @test "topmost file has precedence" {
@@ -71,15 +48,8 @@ create_file() {
   create_file "project/.node-version"
   cd project
   run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/project/.node-version"
-}
-
-@test "legacy file has precedence if higher" {
-  create_file ".node-version"
-  create_file "project/.nodenv-version"
-  cd project
-  run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/project/.nodenv-version"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/project/.node-version"
 }
 
 @test "NODENV_DIR has precedence over PWD" {
@@ -87,7 +57,8 @@ create_file() {
   create_file "project/.node-version"
   cd project
   NODENV_DIR="${NODENV_TEST_DIR}/widget" run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/widget/.node-version"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/widget/.node-version"
 }
 
 @test "PWD is searched if NODENV_DIR yields no results" {
@@ -95,5 +66,19 @@ create_file() {
   create_file "project/.node-version"
   cd project
   NODENV_DIR="${NODENV_TEST_DIR}/widget/blank" run nodenv-version-file
-  assert_success "${NODENV_TEST_DIR}/project/.node-version"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/project/.node-version"
+}
+
+@test "finds version file in target directory" {
+  create_file "project/.node-version"
+  run nodenv-version-file "${PWD}/project"
+  assert_success
+  assert_output "${NODENV_TEST_DIR}/project/.node-version"
+}
+
+@test "fails when no version file in target directory" {
+  run nodenv-version-file "$PWD"
+  assert_failure
+  refute_output
 }

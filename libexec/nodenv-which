@@ -18,12 +18,13 @@ fi
 remove_from_path() {
   local path_to_remove="$1"
   local path_before
-  local result=":$PATH:"
+  local result=":${PATH//\~/$HOME}:"
   while [ "$path_before" != "$result" ]; do
     path_before="$result"
     result="${result//:$path_to_remove:/:}"
   done
-  echo "${result%:}"
+  result="${result%:}"
+  echo "${result#:}"
 }
 
 NODENV_COMMAND="$1"
@@ -36,7 +37,7 @@ fi
 NODENV_VERSION="${NODENV_VERSION:-$(nodenv-version-name)}"
 
 if [ "$NODENV_VERSION" = "system" ]; then
-  PATH="$(remove_from_path "${NODENV_ROOT}/shims")"
+  PATH="$(remove_from_path "${NODENV_ROOT}/shims")" \
   NODENV_COMMAND_PATH="$(command -v "$NODENV_COMMAND" || true)"
 else
   NODENV_COMMAND_PATH="${NODENV_ROOT}/versions/${NODENV_VERSION}/bin/${NODENV_COMMAND}"
@@ -51,7 +52,7 @@ done
 
 if [ -x "$NODENV_COMMAND_PATH" ]; then
   echo "$NODENV_COMMAND_PATH"
-elif ! [ -d "${NODENV_ROOT}/versions/${NODENV_VERSION}" ]; then
+elif [ "$NODENV_VERSION" != "system" ] && [ ! -d "${NODENV_ROOT}/versions/${NODENV_VERSION}" ]; then
   echo "nodenv: version \`$NODENV_VERSION' is not installed (set by $(nodenv-version-origin))" >&2
   exit 1
 else

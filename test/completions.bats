@@ -13,7 +13,8 @@ create_command() {
   create_command "nodenv-hello" "#!$BASH
     echo hello"
   run nodenv-completions hello
-  assert_success ""
+  assert_success
+  assert_output "--help"
 }
 
 @test "command with completion support" {
@@ -25,7 +26,11 @@ else
   exit 1
 fi"
   run nodenv-completions hello
-  assert_success "hello"
+  assert_success
+  assert_output - <<OUT
+--help
+hello
+OUT
 }
 
 @test "forwards extra arguments" {
@@ -39,7 +44,8 @@ else
 fi"
   run nodenv-completions hello happy world
   assert_success
-  assert_output <<OUT
+  assert_output - <<OUT
+--help
 happy
 world
 OUT
